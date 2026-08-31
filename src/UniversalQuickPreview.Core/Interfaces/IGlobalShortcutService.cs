@@ -8,5 +8,7 @@ public interface IGlobalShortcutService : IDisposable
 
     bool IsEnabled { get; set; }
 
+    PreviewShortcutGesture Gesture { get; set; }
+
     void Start();
 }

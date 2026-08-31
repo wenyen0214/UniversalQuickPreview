@@ -9,16 +9,17 @@ public sealed class TrayIconService : IDisposable
     private readonly LocalizationService _localization;
     private readonly Forms.NotifyIcon _notifyIcon;
     private Forms.ContextMenuStrip? _menu;
-    private bool _enabled = true;
+    private bool _enabled;
     private bool _disposed;
 
-    public TrayIconService(LocalizationService localization)
+    public TrayIconService(LocalizationService localization, bool enabled)
     {
         _localization = localization;
+        _enabled = enabled;
         _localization.LanguageChanged += OnLanguageChanged;
         _notifyIcon = new Forms.NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = LoadApplicationIcon(),
             Visible = true
         };
 
@@ -27,7 +28,29 @@ public sealed class TrayIconService : IDisposable
 
     public event Action<bool>? EnabledChanged;
 
+    public event EventHandler? SettingsRequested;
+
+    public event EventHandler? LogsRequested;
+
     public event EventHandler? ExitRequested;
+
+    public void SetEnabled(bool enabled)
+    {
+        if (_enabled == enabled)
+        {
+            return;
+        }
+
+        _enabled = enabled;
+        RebuildMenu();
+    }
+
+    public void ShowAlreadyRunning()
+    {
+        _notifyIcon.BalloonTipTitle = _localization.GetString("AppName");
+        _notifyIcon.BalloonTipText = _localization.GetString("AlreadyRunningMessage");
+        _notifyIcon.ShowBalloonTip(2500);
+    }
 
     public void Dispose()
     {
@@ -59,11 +82,10 @@ public sealed class TrayIconService : IDisposable
             CheckOnClick = true,
             Checked = _enabled
         };
-        enabled.CheckedChanged += (_, _) =>
-        {
-            _enabled = enabled.Checked;
-            EnabledChanged?.Invoke(_enabled);
-        };
+        enabled.CheckedChanged += (_, _) => EnabledChanged?.Invoke(enabled.Checked);
+
+        var settings = new Forms.ToolStripMenuItem(_localization.GetString("SettingsMenu"));
+        settings.Click += (_, _) => SettingsRequested?.Invoke(this, EventArgs.Empty);
 
         var english = new Forms.ToolStripMenuItem("English")
         {
@@ -80,6 +102,9 @@ public sealed class TrayIconService : IDisposable
         var language = new Forms.ToolStripMenuItem(_localization.GetString("LanguageMenu"));
         language.DropDownItems.AddRange([english, traditionalChinese]);
 
+        var logs = new Forms.ToolStripMenuItem(_localization.GetString("OpenLogsMenu"));
+        logs.Click += (_, _) => LogsRequested?.Invoke(this, EventArgs.Empty);
+
         var about = new Forms.ToolStripMenuItem(_localization.GetString("AboutMenu"));
         about.Click += (_, _) => System.Windows.MessageBox.Show(
             _localization.GetString("AboutMessage"),
@@ -94,7 +119,9 @@ public sealed class TrayIconService : IDisposable
             title,
             new Forms.ToolStripSeparator(),
             enabled,
+            settings,
             language,
+            logs,
             about,
             new Forms.ToolStripSeparator(),
             exit
@@ -104,6 +131,19 @@ public sealed class TrayIconService : IDisposable
         _notifyIcon.ContextMenuStrip = menu;
         _notifyIcon.Text = _localization.GetString("AppName");
         oldMenu?.Dispose();
+    }
+
+    private static Icon LoadApplicationIcon()
+    {
+        var resource = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Assets/AppIcon.ico"));
+        if (resource is null)
+        {
+            return SystemIcons.Application;
+        }
+
+        using var stream = resource.Stream;
+        using var icon = new Icon(stream);
+        return (Icon)icon.Clone();
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)

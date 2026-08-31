@@ -1,0 +1,85 @@
+<Window x:Class="UniversalQuickPreview.App.Settings.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource SettingsTitle}"
+        Width="520"
+        Height="600"
+        MinWidth="480"
+        MinHeight="540"
+        Icon="pack://application:,,,/Assets/AppIcon.png"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Background="{DynamicResource WindowBackgroundBrush}">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock FontSize="26"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       Text="{DynamicResource SettingsTitle}" />
+            <TextBlock Margin="0,7,0,0"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       Text="{DynamicResource SettingsDescription}" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" Margin="0,24,0,20" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <CheckBox x:Name="EnabledCheckBox"
+                          Margin="0,0,0,18"
+                          Foreground="{DynamicResource PrimaryTextBrush}"
+                          Content="{DynamicResource EnablePreviewSetting}" />
+                <CheckBox x:Name="StartupCheckBox"
+                          Margin="0,0,0,18"
+                          Foreground="{DynamicResource PrimaryTextBrush}"
+                          Content="{DynamicResource LaunchAtStartupSetting}" />
+                <CheckBox x:Name="ShowPathCheckBox"
+                          Margin="0,0,0,18"
+                          Foreground="{DynamicResource PrimaryTextBrush}"
+                          Content="{DynamicResource ShowFullPathSetting}" />
+                <CheckBox x:Name="OutsideClickCheckBox"
+                          Margin="0,0,0,22"
+                          Foreground="{DynamicResource PrimaryTextBrush}"
+                          Content="{DynamicResource OutsideClickSetting}" />
+
+                <TextBlock FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           Text="{DynamicResource ShortcutSetting}" />
+                <ComboBox x:Name="ShortcutComboBox" Margin="0,7,0,18" Height="34" />
+
+                <TextBlock FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           Text="{DynamicResource ThemeSetting}" />
+                <ComboBox x:Name="ThemeComboBox" Margin="0,7,0,18" Height="34" />
+
+                <TextBlock FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           Text="{DynamicResource WindowSizeSetting}" />
+                <ComboBox x:Name="WindowSizeComboBox" Margin="0,7,0,18" Height="34" />
+
+                <TextBlock FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           Text="{DynamicResource LanguageMenu}" />
+                <ComboBox x:Name="LanguageComboBox" Margin="0,7,0,0" Height="34" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Width="96"
+                    Height="36"
+                    Margin="0,0,10,0"
+                    Content="{DynamicResource CancelButton}"
+                    Click="CancelButton_Click" />
+            <Button Width="96"
+                    Height="36"
+                    Background="{DynamicResource AccentBrush}"
+                    Foreground="White"
+                    Content="{DynamicResource SaveButton}"
+                    Click="SaveButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

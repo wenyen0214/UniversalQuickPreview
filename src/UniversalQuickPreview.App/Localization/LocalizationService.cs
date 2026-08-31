@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Windows;
+using UniversalQuickPreview.App.Settings;
 
 namespace UniversalQuickPreview.App.Localization;
 
@@ -8,7 +9,12 @@ public sealed class LocalizationService
     public const string English = "en";
     public const string TraditionalChinese = "zh-TW";
 
-    private readonly LanguagePreferenceStore _preferenceStore = new();
+    private readonly SettingsService _settings;
+
+    public LocalizationService(SettingsService settings)
+    {
+        _settings = settings;
+    }
 
     public event EventHandler? LanguageChanged;
 
@@ -16,7 +22,7 @@ public sealed class LocalizationService
 
     public void Initialize()
     {
-        var preferredLanguage = _preferenceStore.ReadLanguage();
+        var preferredLanguage = _settings.Current.Language;
         var language = IsSupported(preferredLanguage)
             ? preferredLanguage!
             : CultureInfo.CurrentUICulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
@@ -29,6 +35,11 @@ public sealed class LocalizationService
     public void ApplyLanguage(string language)
     {
         ApplyLanguage(language, persist: true);
+    }
+
+    public void SynchronizeLanguage(string language)
+    {
+        ApplyLanguage(language, persist: false);
     }
 
     public string GetString(string key)
@@ -65,7 +76,7 @@ public sealed class LocalizationService
 
         if (persist)
         {
-            _preferenceStore.WriteLanguage(language);
+            _settings.Update(settings => settings with { Language = language });
         }
 
         LanguageChanged?.Invoke(this, EventArgs.Empty);

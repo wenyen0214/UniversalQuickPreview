@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\UniversalQuickPreview.Core\UniversalQuickPreview.Core.csproj" />
     <ProjectReference Include="..\UniversalQuickPreview.Windows\UniversalQuickPreview.Windows.csproj" />
+    <ProjectReference Include="..\UniversalQuickPreview.Previewers\UniversalQuickPreview.Previewers.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -14,8 +15,14 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <AssemblyName>UniversalQuickPreview</AssemblyName>
     <RootNamespace>UniversalQuickPreview.App</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+    <Resource Include="Assets\AppIcon.png" />
+  </ItemGroup>
 
 </Project>

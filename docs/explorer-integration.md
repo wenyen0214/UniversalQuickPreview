@@ -2,19 +2,21 @@
 
 ## Decision / 決策
 
-The first vertical slice uses two independent Windows integration points:
+The application uses three independent Windows integration points:
 
-1. A `WH_KEYBOARD_LL` low-level keyboard hook detects an unmodified Space key.
+1. A `WH_KEYBOARD_LL` low-level keyboard hook detects Space, Alt+Space, Ctrl+Space, Escape, Left, and Right.
 2. `Shell.Application.Windows()` finds the foreground Explorer window and reads `Document.SelectedItems()`.
+3. A `WH_MOUSE_LL` hook watches only while the preview is visible and closes it when a mouse button is pressed outside the visible preview border.
 
-第一個垂直切片採用兩個彼此獨立的 Windows 整合點：
+應用程式採用三個彼此獨立的 Windows 整合點：
 
-1. 以 `WH_KEYBOARD_LL` 低階鍵盤 Hook 偵測未搭配修飾鍵的 Space。
+1. 以 `WH_KEYBOARD_LL` 低階鍵盤 Hook 偵測 Space、Alt+Space、Ctrl+Space、Escape、Left 與 Right。
 2. 以 `Shell.Application.Windows()` 尋找前景檔案總管視窗，再由 `Document.SelectedItems()` 讀取選取項目。
+3. 只有在預覽視窗可見時才啟用 `WH_MOUSE_LL` Hook；滑鼠按鍵若落在可見預覽邊框外，就關閉預覽，但不攔截原本的點擊。
 
-The keyboard path checks the foreground window class and focused UI Automation control before raising an app event. Shell COM work is then queued outside the hook callback. This keeps the hook short and prevents Explorer COM latency from delaying keyboard input.
+The keyboard path checks the foreground window class and focused UI Automation control before raising an app event. Shell COM and preview loading work is then queued outside the hook callback. Each new selection cancels the previous preview load. This keeps the hooks short and prevents Explorer COM or file I/O latency from delaying input.
 
-鍵盤路徑會先檢查前景視窗類別與目前具有焦點的 UI Automation 控制項，再引發應用程式事件。Shell COM 查詢會排在 Hook callback 之外執行，避免 COM 延遲阻塞鍵盤輸入。
+鍵盤路徑會先檢查前景視窗類別與目前具有焦點的 UI Automation 控制項，再引發應用程式事件。Shell COM 查詢與預覽載入會排在 Hook callback 之外執行；切換檔案時也會取消上一個載入工作，避免 COM 或檔案 I/O 延遲阻塞輸入。
 
 ## Alternatives considered / 評估過的替代方案
 
@@ -38,6 +40,6 @@ UI Automation is retained only for identifying focused edit controls. Using it t
 
 ## Known boundary / 已知邊界
 
-This milestone accepts regular filesystem files only. Desktop selection, virtual Shell items, multiple-file preview, Explorer view-order navigation, and elevated Explorer windows are outside the current slice.
+The application accepts regular filesystem files only. Left and Right navigate through filesystem items returned by the current folder's Shell collection; this is best-effort folder order and may differ from a custom Explorer sort or grouping. Desktop selection, virtual Shell items, multiple-file preview, exact `IFolderView2` view-order navigation, and elevated Explorer windows remain outside the current scope.
 
-本里程碑只接受一般檔案系統中的檔案。桌面選取、虛擬 Shell 項目、多檔預覽、依檔案總管排序導覽，以及高權限檔案總管視窗都不在目前範圍內。
+目前只接受一般檔案系統中的檔案。左右鍵會依目前資料夾 Shell 集合傳回的檔案順序導覽；若檔案總管使用自訂排序或群組，順序可能不同。桌面選取、虛擬 Shell 項目、多檔預覽、精確的 `IFolderView2` 檢視順序，以及高權限檔案總管視窗仍不在目前範圍內。

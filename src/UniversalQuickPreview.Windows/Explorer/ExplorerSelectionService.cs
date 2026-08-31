@@ -85,6 +85,7 @@ public sealed class ExplorerSelectionService : IExplorerSelectionService
         object? folder = null;
         object? folderSelf = null;
         object? selectedItems = null;
+        object? folderItems = null;
 
         try
         {
@@ -92,6 +93,7 @@ public sealed class ExplorerSelectionService : IExplorerSelectionService
             folder = ((dynamic)document).Folder;
             folderSelf = ((dynamic)folder).Self;
             selectedItems = ((dynamic)document).SelectedItems();
+            folderItems = ((dynamic)folder).Items();
 
             var folderPath = Convert.ToString(((dynamic)folderSelf).Path) ?? string.Empty;
             var count = Convert.ToInt32(((dynamic)selectedItems).Count);
@@ -115,17 +117,61 @@ public sealed class ExplorerSelectionService : IExplorerSelectionService
                 }
             }
 
-            return paths.Count == 0
-                ? null
-                : new ExplorerSelection(folderPath, paths, 0, foregroundWindow);
+            if (paths.Count == 0)
+            {
+                return null;
+            }
+
+            var folderFiles = ReadFilePaths(folderItems);
+            var selectedIndex = folderFiles.FindIndex(path =>
+                string.Equals(path, paths[0], StringComparison.OrdinalIgnoreCase));
+
+            if (selectedIndex < 0)
+            {
+                folderFiles.Insert(0, paths[0]);
+                selectedIndex = 0;
+            }
+
+            return new ExplorerSelection(folderPath, paths, folderFiles, selectedIndex, foregroundWindow);
         }
         finally
         {
+            ReleaseComObject(folderItems);
             ReleaseComObject(selectedItems);
             ReleaseComObject(folderSelf);
             ReleaseComObject(folder);
             ReleaseComObject(document);
         }
+    }
+
+    private static List<string> ReadFilePaths(object folderItems)
+    {
+        var count = Convert.ToInt32(((dynamic)folderItems).Count);
+        var paths = new List<string>(count);
+
+        for (var index = 0; index < count; index++)
+        {
+            object? item = null;
+            try
+            {
+                item = ((dynamic)folderItems).Item(index);
+                var path = Convert.ToString(((dynamic)item).Path);
+                if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                {
+                    paths.Add(Path.GetFullPath(path));
+                }
+            }
+            catch (COMException)
+            {
+                // Individual virtual items can become unavailable while enumerating.
+            }
+            finally
+            {
+                ReleaseComObject(item);
+            }
+        }
+
+        return paths;
     }
 
     private static string GetClassName(nint windowHandle)

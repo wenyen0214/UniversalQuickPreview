@@ -6,10 +6,15 @@ namespace UniversalQuickPreview.Windows.Interop;
 internal static class NativeMethods
 {
     internal const int WhKeyboardLl = 13;
+    internal const int WhMouseLl = 14;
     internal const int WmKeyDown = 0x0100;
     internal const int WmKeyUp = 0x0101;
     internal const int WmSysKeyDown = 0x0104;
     internal const int WmSysKeyUp = 0x0105;
+    internal const int WmLeftButtonDown = 0x0201;
+    internal const int WmRightButtonDown = 0x0204;
+    internal const int WmMiddleButtonDown = 0x0207;
+    internal const int WmXButtonDown = 0x020B;
     internal const int VkSpace = 0x20;
     internal const int VkEscape = 0x1B;
     internal const int VkShift = 0x10;
@@ -17,17 +22,27 @@ internal static class NativeMethods
     internal const int VkMenu = 0x12;
     internal const int VkLeftWindows = 0x5B;
     internal const int VkRightWindows = 0x5C;
+    internal const int VkLeft = 0x25;
+    internal const int VkRight = 0x27;
     internal const uint MonitorDefaultToNearest = 2;
     internal const uint SwpNoActivate = 0x0010;
     internal const uint SwpShowWindow = 0x0040;
     internal static readonly nint HwndTopmost = new(-1);
 
     internal delegate nint LowLevelKeyboardProc(int code, nint wParam, nint lParam);
+    internal delegate nint LowLevelMouseProc(int code, nint wParam, nint lParam);
 
     [DllImport("user32.dll", SetLastError = true)]
     internal static extern nint SetWindowsHookEx(
         int hookId,
         LowLevelKeyboardProc callback,
+        nint moduleHandle,
+        uint threadId);
+
+    [DllImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowsHookExW")]
+    internal static extern nint SetWindowsMouseHookEx(
+        int hookId,
+        LowLevelMouseProc callback,
         nint moduleHandle,
         uint threadId);
 
@@ -87,6 +102,23 @@ internal static class NativeMethods
     {
         internal uint VirtualKeyCode;
         internal uint ScanCode;
+        internal uint Flags;
+        internal uint Time;
+        internal nuint ExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct Point
+    {
+        internal int X;
+        internal int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MouseHookData
+    {
+        internal Point Location;
+        internal uint MouseData;
         internal uint Flags;
         internal uint Time;
         internal nuint ExtraInfo;

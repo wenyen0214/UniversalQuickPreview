@@ -1,9 +1,10 @@
 using System.ComponentModel;
-using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 using UniversalQuickPreview.App.Localization;
+using UniversalQuickPreview.App.Settings;
 using UniversalQuickPreview.Core.Formatting;
 using UniversalQuickPreview.Core.Models;
 using UniversalQuickPreview.Windows.Shell;
@@ -23,29 +24,80 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    public void ShowMetadata(FilePreviewMetadata metadata, nint explorerWindowHandle)
+    public event EventHandler? CloseRequested;
+
+    public event EventHandler<int>? NavigationRequested;
+
+    public nint ShowLoading(
+        FilePreviewMetadata metadata,
+        nint explorerWindowHandle,
+        UserSettings settings)
     {
         _metadata = metadata;
         FileNameText.Text = metadata.Name;
         FullPathText.Text = metadata.FullPath;
-        UnavailableText.Visibility = Visibility.Collapsed;
+        PathPanel.Visibility = settings.ShowFullPath ? Visibility.Visible : Visibility.Collapsed;
+        DimensionsText.Text = string.Empty;
+        ResetPanels();
+        LoadingPanel.Visibility = Visibility.Visible;
         RefreshLocalizedValues();
-        ShowAndPosition(explorerWindowHandle);
+
+        if (!IsVisible)
+        {
+            Show();
+        }
+
+        var windowHandle = new WindowInteropHelper(this).EnsureHandle();
+        var (width, height) = settings.WindowSize switch
+        {
+            PreviewWindowSize.Compact => (680, 420),
+            PreviewWindowSize.Large => (1040, 680),
+            _ => (860, 540)
+        };
+        MonitorPlacementService.CenterAboveOwner(windowHandle, explorerWindowHandle, width, height);
+        return windowHandle;
     }
 
-    public void ShowUnavailable(string filePath, nint explorerWindowHandle)
+    public void ShowContent(PreviewContent content)
     {
-        _metadata = null;
-        FileNameText.Text = Path.GetFileName(filePath);
-        FullPathText.Text = filePath;
-        FileSizeText.Text = string.Empty;
-        ModifiedText.Text = string.Empty;
-        UnavailableText.Visibility = Visibility.Visible;
-        ShowAndPosition(explorerWindowHandle);
+        ResetPanels();
+
+        switch (content.Kind)
+        {
+            case PreviewContentKind.Text:
+                TextPreview.Text = content.Text ?? string.Empty;
+                TextPreview.Visibility = Visibility.Visible;
+                DimensionsText.Text = content.IsTruncated
+                    ? _localization.GetString("PreviewTruncated")
+                    : string.Empty;
+                break;
+            case PreviewContentKind.Image:
+                ImagePreview.Source = LoadImage(content.SourcePath!);
+                ImagePanel.Visibility = Visibility.Visible;
+                DimensionsText.Text = content.PixelWidth is not null && content.PixelHeight is not null
+                    ? $"{content.PixelWidth} × {content.PixelHeight}"
+                    : string.Empty;
+                break;
+            default:
+                FallbackTypeText.Text = string.Format(
+                    _localization.CurrentCulture,
+                    _localization.GetString("UnsupportedTypeFormat"),
+                    content.Detail);
+                FallbackPanel.Visibility = Visibility.Visible;
+                break;
+        }
+    }
+
+    public void ShowError()
+    {
+        ResetPanels();
+        ErrorPanel.Visibility = Visibility.Visible;
     }
 
     public void HidePreview()
     {
+        ImagePreview.Source = null;
+        TextPreview.Text = string.Empty;
         Hide();
     }
 
@@ -56,15 +108,27 @@ public partial class MainWindow : Window
         Close();
     }
 
-    private void ShowAndPosition(nint explorerWindowHandle)
+    private static BitmapImage LoadImage(string filePath)
     {
-        if (!IsVisible)
-        {
-            Show();
-        }
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.CacheOption = BitmapCacheOption.OnLoad;
+        image.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+        image.DecodePixelWidth = 1800;
+        image.UriSource = new Uri(filePath, UriKind.Absolute);
+        image.EndInit();
+        image.Freeze();
+        return image;
+    }
 
-        var windowHandle = new WindowInteropHelper(this).EnsureHandle();
-        MonitorPlacementService.CenterAboveOwner(windowHandle, explorerWindowHandle);
+    private void ResetPanels()
+    {
+        LoadingPanel.Visibility = Visibility.Collapsed;
+        TextPreview.Visibility = Visibility.Collapsed;
+        ImagePanel.Visibility = Visibility.Collapsed;
+        FallbackPanel.Visibility = Visibility.Collapsed;
+        ErrorPanel.Visibility = Visibility.Collapsed;
+        ImagePreview.Source = null;
     }
 
     private void RefreshLocalizedValues()
@@ -74,10 +138,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        FileSizeText.Text = string.Format(
-            _localization.CurrentCulture,
-            _localization.GetString("FileSizeFormat"),
-            FileSizeFormatter.Format(_metadata.SizeBytes, _localization.CurrentCulture));
+        FileSizeText.Text = FileSizeFormatter.Format(_metadata.SizeBytes, _localization.CurrentCulture);
         ModifiedText.Text = string.Format(
             _localization.CurrentCulture,
             _localization.GetString("ModifiedFormat"),
@@ -91,16 +152,27 @@ public partial class MainWindow : Window
 
     private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
-        if (e.Key is Key.Space or Key.Escape)
+        switch (e.Key)
         {
-            e.Handled = true;
-            HidePreview();
+            case Key.Space:
+            case Key.Escape:
+                e.Handled = true;
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+                break;
+            case Key.Left:
+                e.Handled = true;
+                NavigationRequested?.Invoke(this, -1);
+                break;
+            case Key.Right:
+                e.Handled = true;
+                NavigationRequested?.Invoke(this, 1);
+                break;
         }
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
-        HidePreview();
+        CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void Window_Closing(object? sender, CancelEventArgs e)
@@ -108,7 +180,7 @@ public partial class MainWindow : Window
         if (!_allowClose)
         {
             e.Cancel = true;
-            HidePreview();
+            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }

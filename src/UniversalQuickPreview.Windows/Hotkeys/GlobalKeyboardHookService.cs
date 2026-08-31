@@ -12,6 +12,7 @@ public sealed class GlobalKeyboardHookService : IGlobalShortcutService
     private readonly HashSet<uint> _pressedKeys = [];
     private nint _hookHandle;
     private bool _disposed;
+    private bool _isEnabled = true;
 
     public GlobalKeyboardHookService()
     {
@@ -20,7 +21,20 @@ public sealed class GlobalKeyboardHookService : IGlobalShortcutService
 
     public event EventHandler<PreviewShortcutPressedEventArgs>? ShortcutPressed;
 
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set
+        {
+            _isEnabled = value;
+            if (!value)
+            {
+                _pressedKeys.Clear();
+            }
+        }
+    }
+
+    public PreviewShortcutGesture Gesture { get; set; } = PreviewShortcutGesture.Space;
 
     public void Start()
     {
@@ -85,8 +99,10 @@ public sealed class GlobalKeyboardHookService : IGlobalShortcutService
 
             PreviewShortcut? shortcut = hookData.VirtualKeyCode switch
             {
-                NativeMethods.VkSpace when !AreModifierKeysPressed() && ForegroundWindowInspector.IsExplorerReadyForShortcut() => PreviewShortcut.Space,
+                NativeMethods.VkSpace when MatchesConfiguredGesture() && ForegroundWindowInspector.IsExplorerReadyForShortcut() => PreviewShortcut.Space,
                 NativeMethods.VkEscape => PreviewShortcut.Escape,
+                NativeMethods.VkLeft when !AreModifierKeysPressed() && ForegroundWindowInspector.IsExplorerReadyForShortcut() => PreviewShortcut.Previous,
+                NativeMethods.VkRight when !AreModifierKeysPressed() && ForegroundWindowInspector.IsExplorerReadyForShortcut() => PreviewShortcut.Next,
                 _ => null
             };
 
@@ -108,6 +124,22 @@ public sealed class GlobalKeyboardHookService : IGlobalShortcutService
         }
 
         return NativeMethods.CallNextHookEx(_hookHandle, code, wParam, lParam);
+    }
+
+    private bool MatchesConfiguredGesture()
+    {
+        var shift = IsPressed(NativeMethods.VkShift);
+        var control = IsPressed(NativeMethods.VkControl);
+        var alt = IsPressed(NativeMethods.VkMenu);
+        var windows = IsPressed(NativeMethods.VkLeftWindows) || IsPressed(NativeMethods.VkRightWindows);
+
+        return Gesture switch
+        {
+            PreviewShortcutGesture.Space => !shift && !control && !alt && !windows,
+            PreviewShortcutGesture.AltSpace => !shift && !control && alt && !windows,
+            PreviewShortcutGesture.ControlSpace => !shift && control && !alt && !windows,
+            _ => false
+        };
     }
 
     private static bool AreModifierKeysPressed()

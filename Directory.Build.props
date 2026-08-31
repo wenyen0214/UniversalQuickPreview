@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Authors>Universal Quick Preview contributors</Authors>
+    <Company>Universal Quick Preview contributors</Company>
+    <Product>Universal Quick Preview</Product>
+    <Copyright>Copyright © 2026 Universal Quick Preview contributors</Copyright>
+  </PropertyGroup>
+</Project>

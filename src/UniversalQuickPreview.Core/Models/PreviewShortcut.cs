@@ -3,7 +3,16 @@ namespace UniversalQuickPreview.Core.Models;
 public enum PreviewShortcut
 {
     Space,
-    Escape
+    Escape,
+    Previous,
+    Next
+}
+
+public enum PreviewShortcutGesture
+{
+    Space,
+    AltSpace,
+    ControlSpace
 }
 public sealed class PreviewShortcutPressedEventArgs(PreviewShortcut shortcut) : EventArgs
 {
