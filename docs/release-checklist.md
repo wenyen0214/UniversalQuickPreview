@@ -30,7 +30,7 @@ Unsigned development builds are expected to display Windows SmartScreen warnings
 
 ## GitHub / GitHub 發布
 
-- [ ] Add the final GitHub repository URL to package metadata.
+- [x] Add the final GitHub repository URL to package metadata.
 - [ ] Record user-visible changes in release notes.
 - [ ] Capture the bilingual README demo GIF using `docs/demo-script.md`.
 - [ ] Tag the reviewed commit as `vX.Y.Z`.

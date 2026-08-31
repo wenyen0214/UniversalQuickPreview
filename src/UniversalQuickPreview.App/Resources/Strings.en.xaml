@@ -19,6 +19,7 @@
     <system:String x:Key="LanguageMenu">Language</system:String>
     <system:String x:Key="OpenLogsMenu">Open logs folder</system:String>
     <system:String x:Key="AboutMenu">About</system:String>
+    <system:String x:Key="GitHubMenu">GitHub</system:String>
     <system:String x:Key="ExitMenu">Exit</system:String>
     <system:String x:Key="AboutMessage">Select a file in File Explorer and press your configured shortcut to preview it. Use Left or Right to navigate. Press the shortcut, Esc, or click outside to close.</system:String>
     <system:String x:Key="AlreadyRunningMessage">Universal Quick Preview is already running in the notification area.</system:String>

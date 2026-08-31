@@ -19,6 +19,7 @@
     <system:String x:Key="LanguageMenu">語言</system:String>
     <system:String x:Key="OpenLogsMenu">開啟記錄資料夾</system:String>
     <system:String x:Key="AboutMenu">關於</system:String>
+    <system:String x:Key="GitHubMenu">GitHub 專案</system:String>
     <system:String x:Key="ExitMenu">結束</system:String>
     <system:String x:Key="AboutMessage">請在檔案總管選取檔案並按下設定的快速鍵。使用左右鍵導覽；再次按快速鍵、Esc 或點擊預覽外部即可關閉。</system:String>
     <system:String x:Key="AlreadyRunningMessage">Universal Quick Preview 已在通知區域執行。</system:String>

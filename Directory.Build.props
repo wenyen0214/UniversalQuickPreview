@@ -5,5 +5,8 @@
     <Company>Universal Quick Preview contributors</Company>
     <Product>Universal Quick Preview</Product>
     <Copyright>Copyright © 2026 Universal Quick Preview contributors</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/wenyen0214/UniversalQuickPreview</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/wenyen0214/UniversalQuickPreview</PackageProjectUrl>
   </PropertyGroup>
 </Project>

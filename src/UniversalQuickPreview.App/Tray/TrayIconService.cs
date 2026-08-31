@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Drawing;
 using Forms = System.Windows.Forms;
 using UniversalQuickPreview.App.Localization;
@@ -112,6 +113,13 @@ public sealed class TrayIconService : IDisposable
             System.Windows.MessageBoxButton.OK,
             System.Windows.MessageBoxImage.Information);
 
+        var github = new Forms.ToolStripMenuItem(_localization.GetString("GitHubMenu"));
+        github.Click += (_, _) => Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://github.com/wenyen0214/UniversalQuickPreview",
+            UseShellExecute = true
+        });
+
         var exit = new Forms.ToolStripMenuItem(_localization.GetString("ExitMenu"));
         exit.Click += (_, _) => ExitRequested?.Invoke(this, EventArgs.Empty);
 
@@ -122,6 +130,7 @@ public sealed class TrayIconService : IDisposable
             settings,
             language,
             logs,
+            github,
             about,
             new Forms.ToolStripSeparator(),
             exit
