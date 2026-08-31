@@ -145,12 +145,9 @@
 
             <Border Grid.Row="3" Background="{DynamicResource SurfaceBrush}" CornerRadius="0,0,12,12">
                 <Grid Margin="22,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
                         <TextBlock x:Name="FileSizeText"
                                    FontSize="13"
                                    Foreground="{DynamicResource SecondaryTextBrush}" />
@@ -159,8 +156,7 @@
                                    FontSize="13"
                                    Foreground="{DynamicResource SecondaryTextBrush}" />
                     </StackPanel>
-                    <StackPanel Grid.Column="1"
-                                HorizontalAlignment="Center"
+                    <StackPanel HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal">
                         <Button x:Name="PreviousButton"
@@ -185,7 +181,7 @@
                                 Click="NextButton_Click" />
                     </StackPanel>
                     <TextBlock x:Name="ModifiedText"
-                               Grid.Column="2"
+                               HorizontalAlignment="Right"
                                VerticalAlignment="Center"
                                FontSize="13"
                                Foreground="{DynamicResource SecondaryTextBrush}" />
