@@ -168,6 +168,7 @@ public partial class App : System.Windows.Application
 
         _explorerWindowHandle = selection.ExplorerWindowHandle;
         _navigation.Start(selection.FolderFiles, selection.SelectedIndex);
+        UpdateNavigationAvailability();
         await LoadPreviewAsync(selectedPath).ConfigureAwait(true);
     }
 
@@ -180,7 +181,15 @@ public partial class App : System.Windows.Application
             return;
         }
 
+        UpdateNavigationAvailability();
         await LoadPreviewAsync(target).ConfigureAwait(true);
+    }
+
+    private void UpdateNavigationAvailability()
+    {
+        _previewWindow?.SetNavigationAvailability(
+            _navigation.CanMovePrevious,
+            _navigation.CanMoveNext);
     }
 
     private async Task LoadPreviewAsync(string filePath)
@@ -204,7 +213,7 @@ public partial class App : System.Windows.Application
             _outsideClickWatcher.Stop();
             if (_settings.Current.CloseWhenClickingOutside)
             {
-                _outsideClickWatcher.Start(previewHandle, transparentMargin: 18);
+                _outsideClickWatcher.Start(previewHandle);
             }
 
             var result = await _previewProviders.LoadAsync(filePath, cancellation.Token).ConfigureAwait(true);

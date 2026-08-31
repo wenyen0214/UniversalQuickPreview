@@ -94,6 +94,12 @@ public partial class MainWindow : Window
         ErrorPanel.Visibility = Visibility.Visible;
     }
 
+    public void SetNavigationAvailability(bool canMovePrevious, bool canMoveNext)
+    {
+        PreviousButton.IsEnabled = canMovePrevious;
+        NextButton.IsEnabled = canMoveNext;
+    }
+
     public void HidePreview()
     {
         ImagePreview.Source = null;
@@ -173,6 +179,16 @@ public partial class MainWindow : Window
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void PreviousButton_Click(object sender, RoutedEventArgs e)
+    {
+        NavigationRequested?.Invoke(this, -1);
+    }
+
+    private void NextButton_Click(object sender, RoutedEventArgs e)
+    {
+        NavigationRequested?.Invoke(this, 1);
     }
 
     private void Window_Closing(object? sender, CancelEventArgs e)

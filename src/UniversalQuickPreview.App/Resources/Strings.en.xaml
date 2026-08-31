@@ -14,6 +14,8 @@
     <system:String x:Key="UnsupportedTypeFormat">{0} file</system:String>
     <system:String x:Key="PreviewTruncated">Showing the first 256K characters</system:String>
     <system:String x:Key="NavigationHint">← Previous   Next →</system:String>
+    <system:String x:Key="PreviousFile">← Previous</system:String>
+    <system:String x:Key="NextFile">Next →</system:String>
     <system:String x:Key="EnabledMenu">Enabled</system:String>
     <system:String x:Key="SettingsMenu">Settings</system:String>
     <system:String x:Key="LanguageMenu">Language</system:String>

@@ -32,8 +32,17 @@ public static class MonitorPlacementService
         var width = Math.Clamp((int)(desiredWidth * scale), minimumWidth, maximumWidth);
         var height = Math.Clamp((int)(desiredHeight * scale), minimumHeight, maximumHeight);
 
-        var left = workArea.Left + (availableWidth - width) / 2;
-        var top = workArea.Top + (availableHeight - height) / 2;
+        var ownerCenterX = workArea.Left + availableWidth / 2;
+        var ownerCenterY = workArea.Top + availableHeight / 2;
+        if (NativeMethods.GetWindowRect(ownerWindow, out var ownerBounds) &&
+            ownerBounds.Right > ownerBounds.Left && ownerBounds.Bottom > ownerBounds.Top)
+        {
+            ownerCenterX = ownerBounds.Left + (ownerBounds.Right - ownerBounds.Left) / 2;
+            ownerCenterY = ownerBounds.Top + (ownerBounds.Bottom - ownerBounds.Top) / 2;
+        }
+
+        var left = Math.Clamp(ownerCenterX - width / 2, workArea.Left, workArea.Right - width);
+        var top = Math.Clamp(ownerCenterY - height / 2, workArea.Top, workArea.Bottom - height);
 
         NativeMethods.SetWindowPos(
             previewWindow,

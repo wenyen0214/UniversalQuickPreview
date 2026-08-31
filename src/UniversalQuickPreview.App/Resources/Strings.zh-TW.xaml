@@ -14,6 +14,8 @@
     <system:String x:Key="UnsupportedTypeFormat">{0} 檔案</system:String>
     <system:String x:Key="PreviewTruncated">顯示前 256K 個字元</system:String>
     <system:String x:Key="NavigationHint">← 上一個　下一個 →</system:String>
+    <system:String x:Key="PreviousFile">← 上一個</system:String>
+    <system:String x:Key="NextFile">下一個 →</system:String>
     <system:String x:Key="EnabledMenu">啟用快速預覽</system:String>
     <system:String x:Key="SettingsMenu">設定</system:String>
     <system:String x:Key="LanguageMenu">語言</system:String>

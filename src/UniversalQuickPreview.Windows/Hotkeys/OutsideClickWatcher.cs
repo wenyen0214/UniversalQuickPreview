@@ -9,7 +9,6 @@ public sealed class OutsideClickWatcher : IDisposable
     private readonly NativeMethods.LowLevelMouseProc _callback;
     private nint _hookHandle;
     private nint _targetWindow;
-    private int _inset;
     private bool _disposed;
 
     public OutsideClickWatcher()
@@ -19,12 +18,10 @@ public sealed class OutsideClickWatcher : IDisposable
 
     public event EventHandler? OutsideClicked;
 
-    public void Start(nint targetWindow, int transparentMargin = 0)
+    public void Start(nint targetWindow)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         _targetWindow = targetWindow;
-        var dpi = NativeMethods.GetDpiForWindow(targetWindow);
-        _inset = (int)Math.Round(transparentMargin * (dpi == 0 ? 1d : dpi / 96d));
         if (_hookHandle != nint.Zero)
         {
             return;
@@ -51,7 +48,6 @@ public sealed class OutsideClickWatcher : IDisposable
         NativeMethods.UnhookWindowsHookEx(_hookHandle);
         _hookHandle = nint.Zero;
         _targetWindow = nint.Zero;
-        _inset = 0;
     }
 
     public void Dispose()
@@ -67,15 +63,18 @@ public sealed class OutsideClickWatcher : IDisposable
 
     private nint HookCallback(int code, nint wParam, nint lParam)
     {
-        if (code >= 0 && IsButtonDown(wParam.ToInt32()) &&
-            _targetWindow != nint.Zero && NativeMethods.GetWindowRect(_targetWindow, out var bounds))
+        if (code >= 0 && IsButtonDown(wParam.ToInt32()) && _targetWindow != nint.Zero)
         {
             try
             {
                 var data = Marshal.PtrToStructure<NativeMethods.MouseHookData>(lParam);
-                var point = data.Location;
-                if (point.X < bounds.Left + _inset || point.X >= bounds.Right - _inset ||
-                    point.Y < bounds.Top + _inset || point.Y >= bounds.Bottom - _inset)
+                var hitWindow = NativeMethods.WindowFromPoint(data.Location);
+                var hitRootOwner = hitWindow == nint.Zero
+                    ? nint.Zero
+                    : NativeMethods.GetAncestor(hitWindow, NativeMethods.GaRootOwner);
+                var targetRootOwner = NativeMethods.GetAncestor(_targetWindow, NativeMethods.GaRootOwner);
+
+                if (hitRootOwner == nint.Zero || hitRootOwner != targetRootOwner)
                 {
                     OutsideClicked?.Invoke(this, EventArgs.Empty);
                 }

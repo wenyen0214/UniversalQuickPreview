@@ -25,6 +25,7 @@ internal static class NativeMethods
     internal const int VkLeft = 0x25;
     internal const int VkRight = 0x27;
     internal const uint MonitorDefaultToNearest = 2;
+    internal const uint GaRootOwner = 3;
     internal const uint SwpNoActivate = 0x0010;
     internal const uint SwpShowWindow = 0x0040;
     internal static readonly nint HwndTopmost = new(-1);
@@ -78,6 +79,12 @@ internal static class NativeMethods
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool GetMonitorInfo(nint monitorHandle, ref MonitorInfo monitorInfo);
+
+    [DllImport("user32.dll")]
+    internal static extern nint WindowFromPoint(Point point);
+
+    [DllImport("user32.dll")]
+    internal static extern nint GetAncestor(nint windowHandle, uint flags);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
