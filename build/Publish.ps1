@@ -56,10 +56,10 @@ if ($SkipInstaller) {
 }
 
 $compilerCandidates = @(
-    (Get-Command 'ISCC.exe' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source),
     "$env:LOCALAPPDATA\Programs\Inno Setup 7\ISCC.exe",
     "$env:ProgramFiles\Inno Setup 7\ISCC.exe",
     "$env:ProgramFiles(x86)\Inno Setup 7\ISCC.exe",
+    (Get-Command 'ISCC.exe' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source),
     "$env:ProgramFiles(x86)\Inno Setup 6\ISCC.exe",
     "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
 ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
